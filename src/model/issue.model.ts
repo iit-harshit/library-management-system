@@ -16,11 +16,12 @@ export interface IssueDocument extends IssueInput, Document {
 }
 
 const IssueSchema = new Schema({
-  to: { type: Schema.Types.ObjectId, ref: "User" },
-  by: { type: Schema.Types.ObjectId, ref: "User" },
-  book: { type: Schema.Types.ObjectId, ref: "Book" },
+  to: { type: Schema.Types.ObjectId, ref: "User", require: true },
+  by: { type: Schema.Types.ObjectId, ref: "User", require: true },
+  book: { type: Schema.Types.ObjectId, ref: "Book", require: true },
   issuedDate: { type: Date, default: Date.now() },
   dueDate: { type: Date, default: Date.now() },
+  isreturn: { type: Boolean, default: false, require: true },
 });
 
 const Issue = model<IssueDocument>("Issue", IssueSchema);
