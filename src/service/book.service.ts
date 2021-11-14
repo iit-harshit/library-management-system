@@ -17,7 +17,7 @@ export async function updateBook(
   update: UpdateQuery<BookDocument>
 ) {
   try {
-    return await Book.findOneAndUpdate(filter, update);
+    return await Book.findOneAndUpdate(filter, update, { new: true });
   } catch (e: any) {
     throw new Error(e.message);
   }
