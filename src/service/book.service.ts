@@ -63,7 +63,7 @@ export async function issueBook({
       }
     );
 
-    return updatedBook;
+    return issue;
   } catch (e: any) {
     throw new Error(e.message);
   }
@@ -90,7 +90,7 @@ export async function returnBook({
       { $pull: { issue: issue._id }, $inc: { quantity: 1, available: 1 } }
     );
 
-    return updatedBook;
+    return issue;
   } catch (e: any) {
     throw new Error(e.message);
   }
