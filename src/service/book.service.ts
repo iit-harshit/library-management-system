@@ -1,5 +1,8 @@
 import { FilterQuery, UpdateQuery } from "mongoose";
 import Book, { BookDocument, BookInput } from "../model/book.model";
+import { UserDocument } from "../model/user.model";
+import { generateDate } from "../utils/time.utils";
+import { createIssue } from "./issue.service";
 
 export async function createBook(input: BookInput) {
   try {
@@ -15,6 +18,52 @@ export async function updateBook(
 ) {
   try {
     return await Book.findOneAndUpdate(filter, update);
+  } catch (e: any) {
+    throw new Error(e.message);
+  }
+}
+
+export async function issueBook({
+  bookId,
+  to,
+  by,
+}: {
+  bookId: BookDocument["_id"];
+  to: UserDocument["_id"];
+  by: UserDocument["_id"];
+}) {
+  try {
+    const book = await Book.findById(bookId)
+      .select({ available: 1, maxIssueDuration: 1 })
+      .lean();
+
+    if (!book) {
+      throw new Error("Not Found");
+    }
+
+    if (book.available < 1) {
+      throw new Error("Book is not availabe");
+    }
+
+    const { issueDate, dueDate } = generateDate(book.maxIssueDuration);
+
+    const issue = await createIssue({
+      to,
+      by,
+      book: bookId,
+      issueDate,
+      dueDate,
+    });
+
+    const updatedBook = await Book.findOneAndUpdate(
+      { _id: bookId },
+      {
+        $addToSet: { issue: issue._id },
+        $inc: { quantity: -1, available: 1 },
+      }
+    );
+
+    return updatedBook;
   } catch (e: any) {
     throw new Error(e.message);
   }
