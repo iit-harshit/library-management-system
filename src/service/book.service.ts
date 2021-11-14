@@ -2,7 +2,7 @@ import { FilterQuery, UpdateQuery } from "mongoose";
 import Book, { BookDocument, BookInput } from "../model/book.model";
 import { UserDocument } from "../model/user.model";
 import { generateDate } from "../utils/time.utils";
-import { createIssue } from "./issue.service";
+import { createIssue, findIssue, updateIssue } from "./issue.service";
 
 export async function createBook(input: BookInput) {
   try {
@@ -61,6 +61,33 @@ export async function issueBook({
         $addToSet: { issue: issue._id },
         $inc: { quantity: -1, available: 1 },
       }
+    );
+
+    return updatedBook;
+  } catch (e: any) {
+    throw new Error(e.message);
+  }
+}
+
+export async function returnBook({
+  bookId,
+  to,
+}: {
+  bookId: BookDocument["_id"];
+  to: UserDocument["_id"];
+}) {
+  try {
+    const issue = await updateIssue(
+      { book: bookId, to },
+      { isreturn: true, returnDate: new Date() }
+    );
+    if (!issue) {
+      throw new Error("Invalid return");
+    }
+
+    const updatedBook = await Book.findOneAndUpdate(
+      { _id: bookId },
+      { $pull: { issue: issue._id }, $inc: { quantity: 1, available: 1 } }
     );
 
     return updatedBook;
