@@ -20,7 +20,7 @@ const BookSchema = new Schema({
   author: { type: String, require: true },
   copies: { type: Number, require: true, default: 0 },
   available: { type: Number, require: true, default: 0 },
-  maxIssueDuration: { type: Number, require: true, default: 10080 }, // By default max issue duration is 7days
+  maxIssueDuration: { type: Number, require: true, default: 604800 }, // By default max issue duration is 7days
   issue: [{ type: Schema.Types.ObjectId, ref: "Issue" }],
 });
 

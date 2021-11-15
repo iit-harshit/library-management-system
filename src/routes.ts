@@ -1,39 +1,15 @@
 import { Express, Request, Response } from "express";
-import { createUserHandler } from "./controller/user.controller";
-import {
-  createUserSessionHandler,
-  invalidateUserSessionHandler,
-  getUserSessionsHandler,
-} from "./controller/session.controller";
-import { validateRequest, requiresUser } from "./middleware";
-import {
-  createUserSchema,
-  createUserSessionSchema,
-} from "./schema/user.schema";
-import {
-  createPostSchema,
-  updatePostSchema,
-  deletePostSchema,
-} from "./schema/post.schema";
 
+import userRouter from "./routes/user.routes";
+import sessionRouter from "./routes/session.routes";
 import bookRouter from "./routes/book.routes";
 
 export default function (app: Express) {
   app.get("/healthcheck", (req: Request, res: Response) => res.sendStatus(200));
 
-  // Register user
-  app.post(
-    "/user/create",
-    validateRequest(createUserSchema),
-    createUserHandler
-  );
+  app.use("/user", userRouter);
 
-  // Login
-  app.post(
-    "/session/create",
-    validateRequest(createUserSessionSchema),
-    createUserSessionHandler
-  );
+  app.use("/session", sessionRouter);
 
   app.use("/book", bookRouter);
 }

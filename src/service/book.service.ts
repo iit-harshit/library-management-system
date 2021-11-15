@@ -2,7 +2,7 @@ import { FilterQuery, UpdateQuery } from "mongoose";
 import Book, { BookDocument, BookInput } from "../model/book.model";
 import { UserDocument } from "../model/user.model";
 import { generateDate } from "../utils/time.utils";
-import { createIssue, findIssue, updateIssue } from "./issue.service";
+import { createIssue, updateIssue } from "./issue.service";
 
 export async function createBook(input: BookInput) {
   try {

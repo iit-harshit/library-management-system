@@ -34,7 +34,7 @@ router.post(
 );
 
 router.post(
-  "/return ",
+  "/return",
   [requiresUser, validateRequest(returnBookSchema)],
   returnBookHandler
 );
