@@ -3,6 +3,8 @@ import Book, { BookDocument, BookInput } from "../model/book.model";
 import { UserDocument } from "../model/user.model";
 import { generateDate } from "../utils/time.utils";
 import { createIssue, updateIssue } from "./issue.service";
+import { findRole } from "./user.service";
+import config from "config";
 
 export async function createBook(input: BookInput) {
   try {
@@ -33,6 +35,14 @@ export async function issueBook({
   by: UserDocument["_id"];
 }) {
   try {
+    const issuerRole = await findRole({ _id: by });
+
+    if (
+      issuerRole != config.get("role.admin") ||
+      issuerRole != config.get("role.librarian")
+    ) {
+      throw new Error("Not Allowed");
+    }
     const book = await Book.findById(bookId)
       .select({ available: 1, maxIssueDuration: 1 })
       .lean();

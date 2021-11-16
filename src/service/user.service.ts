@@ -36,6 +36,14 @@ export async function validatePassword({
   return omit(user.toJSON(), "password");
 }
 
+export async function findRole(query: FilterQuery<UserDocument>) {
+  const user = await User.findOne(query).select({ role: 1 }).lean();
+  if (!user) {
+    throw new Error("Invalid user");
+  }
+  return user.role;
+}
+
 export async function updateRole({
   updaterId,
   updatee: { id, newRole },
@@ -44,25 +52,18 @@ export async function updateRole({
   updatee: { id: UserDocument["_id"]; newRole: number };
 }) {
   // Finding the updater
-  const updater = await User.findOne({ _id: updaterId })
-    .select({ role: 1 })
-    .lean();
-
-  // If updater is not in database
-  if (!updater) {
-    throw new Error("Invalid user");
-  }
+  const updaterRole = await findRole({ _id: updaterId });
 
   // Checking if updater have enough permission
 
-  if (updater.role == config.get("role.borrower")) {
+  if (updaterRole == config.get("role.borrower")) {
     throw new Error("Not allowed");
   }
 
   if (
     (newRole == config.get("role.librarian") ||
       newRole == config.get("role.admin")) &&
-    updater.role != config.get("role.admin")
+    updaterRole != config.get("role.admin")
   ) {
     throw new Error("Not Allowed");
   }
