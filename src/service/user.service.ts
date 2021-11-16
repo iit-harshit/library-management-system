@@ -1,7 +1,7 @@
 import { DocumentDefinition, FilterQuery } from "mongoose";
 import { omit } from "lodash";
 import User, { UserDocument } from "../model/user.model";
-
+import config from "config";
 export async function createUser(input: DocumentDefinition<UserDocument>) {
   try {
     return await User.create(input);
@@ -34,4 +34,48 @@ export async function validatePassword({
   }
 
   return omit(user.toJSON(), "password");
+}
+
+export async function updateRole({
+  updaterId,
+  updatee: { id, newRole },
+}: {
+  updaterId: UserDocument["_id"];
+  updatee: { id: UserDocument["_id"]; newRole: number };
+}) {
+  // Finding the updater
+  const updater = await User.findOne({ _id: updaterId })
+    .select({ role: 1 })
+    .lean();
+
+  // If updater is not in database
+  if (!updater) {
+    throw new Error("Invalid user");
+  }
+
+  // Checking if updater have enough permission
+
+  if (updater.role == config.get("role.borrower")) {
+    throw new Error("Not allowed");
+  }
+
+  if (
+    (newRole == config.get("role.librarian") ||
+      newRole == config.get("role.admin")) &&
+    updater.role != config.get("role.admin")
+  ) {
+    throw new Error("Not Allowed");
+  }
+
+  // Updating the user
+  const updatee = await User.findByIdAndUpdate(
+    id,
+    {
+      role: newRole,
+      roleUpdatedBy: updaterId,
+    },
+    { new: true }
+  );
+
+  return updatee;
 }
